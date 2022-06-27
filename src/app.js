@@ -1,17 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const { serverPort } = require('./config');
-const mainRoutes = require('./routes/main');
+const userRoutes = require('./routes/v1/users');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 app.get('/', (req, res) => {
-  res.send({ msg: 'Welcome to X back-end app' });
+  res.send({ msg: 'Welcome to 6 Jar back-end app' });
 });
 
-app.use('/main', mainRoutes);
+app.use('/v1/users/', userRoutes);
 
 app.all('*', (req, res) => {
   res.status(404).send({ err: 'Page not found' });
