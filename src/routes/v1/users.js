@@ -15,12 +15,15 @@ router.post('/register', validation(registerSchema), async (req, res) => {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
       INSERT INTO users (name, email, password)
-      VALUES (${mySQL.escape(req.body.name)}, ${mySQL.escape(req.body.email)}, '${hash}')
+      SELECT ${mySQL.escape(req.body.name)}, ${mySQL.escape(req.body.email)}, '${hash}'
+      WHERE NOT EXISTS (
+        SELECT email FROM users WHERE email = ${mySQL.escape(req.body.email)}
+      ) LIMIT 1;
       `);
     await con.end();
 
     if (!data.insertId) {
-      return res.status(500).send({ err: 'Server issue occured. Please try again' });
+      return res.status(400).send({ err: 'Your email is already in use' });
     }
 
     return res.send({ msg: 'Succesfully created account' });
