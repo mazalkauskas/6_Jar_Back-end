@@ -13,7 +13,7 @@ const loginSchema = Joi.object({
 
 const changePasswordSchema = Joi.object({
   oldPassword: Joi.string().required(),
-  newPassword: Joi.string().min(8).max(16).required(),
+  newPassword: Joi.string().min(6).max(16).required(),
 });
 
 module.exports = {
