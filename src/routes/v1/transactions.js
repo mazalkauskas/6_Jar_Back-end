@@ -3,7 +3,11 @@ const mySQL = require('mysql2/promise');
 const isLoggedIn = require('../../middleware/auth');
 const { mySQLConfig } = require('../../config');
 const validation = require('../../middleware/validation');
-const { incomePostSchema, expensePostSchema } = require('../../middleware/Modules/transactionsSchemas');
+const {
+  incomePostSchema,
+  expensePostSchema,
+  deletePostSchema,
+} = require('../../middleware/Modules/transactionsSchemas');
 
 const router = express.Router();
 
@@ -105,7 +109,7 @@ router.get('/all-history', isLoggedIn, async (req, res) => {
   }
 });
 
-router.post('/delete', isLoggedIn, async (req, res) => {
+router.post('/delete', isLoggedIn, validation(deletePostSchema), async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`

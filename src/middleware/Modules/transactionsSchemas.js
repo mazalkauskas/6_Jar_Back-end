@@ -14,7 +14,12 @@ const expensePostSchema = Joi.object({
   quantity: Joi.number().required(),
 });
 
+const deletePostSchema = Joi.object({
+  id: Joi.number().required(),
+});
+
 module.exports = {
   incomePostSchema,
   expensePostSchema,
+  deletePostSchema,
 };
