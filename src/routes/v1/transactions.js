@@ -2,8 +2,8 @@ const express = require('express');
 const mySQL = require('mysql2/promise');
 const isLoggedIn = require('../../middleware/auth');
 const { mySQLConfig } = require('../../config');
-// const validation = require('../../middleware/validation');
-// const { incomePostSchema } = require('../../middleware/Modules/contentSchemas');
+const validation = require('../../middleware/validation');
+const { incomePostSchema, expensePostSchema } = require('../../middleware/Modules/transactionsSchemas');
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ const currentTime = () => {
 
 setInterval(currentTime, 60000);
 
-router.post('/add/income', isLoggedIn, async (req, res) => {
+router.post('/add/income', validation(incomePostSchema), isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
@@ -44,7 +44,7 @@ router.post('/add/income', isLoggedIn, async (req, res) => {
   }
 });
 
-router.post('/add/expense', isLoggedIn, async (req, res) => {
+router.post('/add/expense', validation(expensePostSchema), isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
@@ -74,7 +74,9 @@ router.get('/latest-history', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT * FROM transactions ORDER BY date DESC
+    SELECT * FROM transactions
+    WHERE user_id = ${mySQL.escape(req.user.accountId)}
+    ORDER BY date DESC
     LIMIT 5
     `);
     await con.end();
@@ -90,7 +92,9 @@ router.get('/all-history', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT * FROM transactions ORDER BY date DESC
+    SELECT * FROM transactions 
+    WHERE user_id = ${mySQL.escape(req.user.accountId)}
+    ORDER BY date DESC
     `);
     await con.end();
 
@@ -98,6 +102,20 @@ router.get('/all-history', isLoggedIn, async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(500).send({ err: 'Server issue occured. Please try again' });
+  }
+});
+
+router.post('/delete', isLoggedIn, async (req, res) => {
+  try {
+    const con = await mySQL.createConnection(mySQLConfig);
+    const [data] = await con.execute(`
+     DELETE FROM transactions WHERE id = ${mySQL.escape(req.body.id)}
+     `);
+    await con.end();
+
+    return res.send({ msg: 'Transaction was removed' });
+  } catch (err) {
+    return res.status(500).send({ err: 'Server issue occured. Please try again later' });
   }
 });
 
