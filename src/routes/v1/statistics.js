@@ -9,8 +9,10 @@ router.get('/incomes', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT SUM(quantity) AS incomesSum FROM transactions
-    WHERE type = 'income' AND user_id = '${req.user.accountId}'
+    SELECT IFNULL(
+      (SELECT SUM(quantity) FROM transactions
+      WHERE type = 'income' AND user_id = '${req.user.accountId}'), 0
+    ) AS incomesSum
     `);
     await con.end();
 
@@ -25,8 +27,10 @@ router.get('/expenses', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-      SELECT SUM(quantity) AS expensesSum FROM transactions
-      WHERE type = 'expense' AND user_id = '${req.user.accountId}'
+    SELECT IFNULL(
+      (SELECT SUM(quantity) FROM transactions
+      WHERE type = 'expense' AND user_id = '${req.user.accountId}'),0
+    ) AS expensesSum
       `);
     await con.end();
 
@@ -41,12 +45,13 @@ router.get('/jars/necessities', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT(SELECT SUM(quantity) * 0.5 FROM transactions
+    SELECT IFNULL(
+    (SELECT(SELECT SUM(quantity) * 0.5 FROM transactions
      WHERE type = 'income' AND user_id = '${req.user.accountId}')
      -
     (SELECT IFNULL((SELECT SUM(quantity) FROM transactions
     WHERE subtype = 'necessities' AND user_id = '${req.user.accountId}'), 0
-    ))AS necessitiesLeft
+    ))),0) AS necessitiesLeft
     `);
     await con.end();
 
@@ -61,12 +66,13 @@ router.get('/jars/education', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
+    SELECT IFNULL(
+    (SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
      WHERE type = 'income' AND user_id = '${req.user.accountId}')
      -
     (SELECT IFNULL((SELECT SUM(quantity) FROM transactions
     WHERE subtype = 'education' AND user_id = '${req.user.accountId}'), 0
-    ))AS educationLeft
+    ))), 0) AS educationLeft
     `);
     await con.end();
 
@@ -81,12 +87,13 @@ router.get('/jars/saving', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
+    SELECT IFNULL(
+    (SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
      WHERE type = 'income' AND user_id = '${req.user.accountId}')
      -
     (SELECT IFNULL((SELECT SUM(quantity) FROM transactions
     WHERE subtype = 'saving' AND user_id = '${req.user.accountId}'), 0
-    ))AS savingLeft
+    ))), 0) AS savingLeft
     `);
     await con.end();
 
@@ -101,12 +108,13 @@ router.get('/jars/play', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
+    SELECT IFNULL(
+    (SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
      WHERE type = 'income' AND user_id = '${req.user.accountId}')
      -
     (SELECT IFNULL((SELECT SUM(quantity) FROM transactions
     WHERE subtype = 'play' AND user_id = '${req.user.accountId}'), 0
-    ))AS playLeft
+    ))), 0) AS playLeft
     `);
     await con.end();
 
@@ -121,12 +129,13 @@ router.get('/jars/investment', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
+    SELECT IFNULL(
+    (SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
      WHERE type = 'income' AND user_id = '${req.user.accountId}')
      -
     (SELECT IFNULL((SELECT SUM(quantity) FROM transactions
     WHERE subtype = 'investment' AND user_id = '${req.user.accountId}'), 0
-    ))AS investmentLeft
+    ))), 0) AS investmentLeft
     `);
     await con.end();
 
@@ -141,12 +150,13 @@ router.get('/jars/give', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
+    SELECT IFNULL(
+    (SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
      WHERE type = 'income' AND user_id = '${req.user.accountId}')
      -
     (SELECT IFNULL((SELECT SUM(quantity) FROM transactions
     WHERE subtype = 'give' AND user_id = '${req.user.accountId}'), 0
-    ))AS giveLeft
+    ))), 0) AS giveLeft
     `);
     await con.end();
 
