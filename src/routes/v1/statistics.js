@@ -41,7 +41,7 @@ router.get('/jars/necessities', isLoggedIn, async (req, res) => {
   try {
     const con = await mySQL.createConnection(mySQLConfig);
     const [data] = await con.execute(`
-    SELECT(SELECT SUM(quantity) * 0.1 FROM transactions
+    SELECT(SELECT SUM(quantity) * 0.5 FROM transactions
      WHERE type = 'income' AND user_id = '${req.user.accountId}')
      -
     (SELECT IFNULL((SELECT SUM(quantity) FROM transactions
